@@ -82,6 +82,73 @@ class MichelineGrammar {
     return prefix + prim;
   }
 
+  String primAnnToHex(List d){
+    final String prefix = '04';
+    final String prim = encodePrimitive(d[6].toString());
+    String ann = d[15].map((e) {
+      String t = e[0].toString();
+      t = t.substring(1, t.length - 1);
+      return t;
+    }).join('');
+    ann = ann.split('').map((e) => e.codeUnitAt(0).toRadixString(16).toString()).join('');
+    ann = encodeLength(int.parse((ann.length / 2).toString())) + ann;
+    return prefix + prim + ann;
+  }
+
+  String primArgToHex(List d){
+    String prefix = '05';
+    if(d[15].length == 2){
+      prefix = '07';
+    }
+    else{
+      if(d[15].length > 2){
+        prefix = '09';
+      }
+    }
+    final String prim = encodePrimitive(d[6].toString());
+    String args = d[15].map((e) => e[0]).join('');
+    String newArgs = '';
+    if(prefix == '09'){
+      newArgs = '0000000' + int.parse((args.length / 2).toString()).toRadixString(16).toString();
+      newArgs = newArgs.substring(newArgs.length - 8);
+      newArgs = newArgs + args + '00000000';
+    }
+    newArgs = newArgs == '' ? args : newArgs;
+    return prefix + prim + newArgs;
+  }
+
+  String primArgAnnToHex(List d){
+    String prefix = '06';
+    if(d[15].length == 2){
+      prefix = '08';
+    }
+    else{
+      if(d[15].length > 2){
+        prefix = '09';
+      }
+    }
+    String prim = encodePrimitive(d[6].toString());
+    String args = d[15].map((v) => v[0]).join('');
+    String ann = d[26].map((v){
+      String t = v[0].toString();
+      t = t.substring(1, t.length - 1);
+      return t;
+    });
+    ann = ann.split('').map((e){
+      String d = e.codeUnitAt(0).toRadixString(16).toString();
+      return d;
+    }).join('');
+    ann = encodeLength(int.parse((ann.length / 2).toString())) + ann;
+    String newArgs = '';
+    if (prefix == '09') {
+      newArgs = '0000000' + int.parse((args.length / 2).toString()).toRadixString(16).toString();
+      newArgs = newArgs.substring(newArgs.length - 8);
+      newArgs = newArgs + args;
+    }
+    newArgs = newArgs == '' ? args : newArgs;
+    return prefix + prim + newArgs + ann;
+  }
+
   String writeSignedInt(int value){
     if(value == 0){
       return '00';
