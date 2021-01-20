@@ -20,17 +20,16 @@ class MichelineGrammar {
     });
   }
 
+  id(List d){
+    return d[0];
+  }
+
   void setKeywordList (List list){
     languageKeywords = list;
   }
 
   int getCodeForKeyword(String word){
     return languageKeywords.indexOf(word);
-  }
-
-  String encodeLength(int l){
-    String output = '0000000' + l.toRadixString(16).toString();
-    return output.substring(output.length - 8);
   }
 
   String getKeywordForWord(int index){
@@ -68,12 +67,6 @@ class MichelineGrammar {
     String content = matchedArray.map((e) => e[0]).join('');
     final len = encodeLength(int.parse((content.length / 2).toString()));
     return prefix + len + content;
-  }
-
-  String encodePrimitive(String p){
-    String result = '00' + getCodeForKeyword(p).toRadixString(16).toString();
-    result = result.substring(result.length - 2);
-    return result;
   }
 
   String primBareToHex(String d){
@@ -149,6 +142,17 @@ class MichelineGrammar {
     return prefix + prim + newArgs + ann;
   }
 
+  String encodePrimitive(String p){
+    String result = '00' + getCodeForKeyword(p).toRadixString(16).toString();
+    result = result.substring(result.length - 2);
+    return result;
+  }
+
+  String encodeLength(int l){
+    String output = '0000000' + l.toRadixString(16).toString();
+    return output.substring(output.length - 8);
+  }
+
   String writeSignedInt(int value){
     if(value == 0){
       return '00';
@@ -160,20 +164,20 @@ class MichelineGrammar {
     for (var i = 0; i < l; i += 7) {
       BigInt byte = BigInt.zero;
       if(i == 0){
-        // byte = v.and(0x3f);
-        // v = v.shiftRight(6);
+        byte = v & BigInt.from(0x3f);
+        v = v >> 6;
       }
       else{
-        // byte = v.and(0x7f);
-        // v = v.shiftRight(7);
+        byte = v & BigInt.from(0x7f);
+        v = v >> 7;
       }
 
       if(value < 0 && i == 0){
-        // byte = byte.or(0x40);
+        byte = byte | BigInt.from(0x40);
       }
       
       if(i + 7 < l){
-        // byte = byte.or(0x80);
+        byte = byte | BigInt.from(0x80);
       }
       arr.add(byte.toInt());
     }
